@@ -12,6 +12,9 @@ ARCH_PKGS=(
     hyprland
     waybar
     kitty
+    alacritty
+    scrcpy
+    android-tools
     rofi-wayland
     wofi
     cliphist

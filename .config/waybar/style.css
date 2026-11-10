@@ -226,3 +226,28 @@ tooltip {
     padding: 0px 5px;
     transition: all .3s ease;
 }
+/* Phone Monitor custom module */
+#custom-phone {
+    padding: 0 10px;
+    margin: 0 4px;
+    border-radius: 8px;
+    background: alpha(@color2, 0.25);
+    color: @foreground;
+    font-weight: bold;
+    transition: all 0.3s ease;
+}
+
+#custom-phone.phone-charging {
+    background: alpha(@color2, 0.45);
+    color: @color2;
+}
+
+#custom-phone.phone-low {
+    background: alpha(@color1, 0.5);
+    color: @color1;
+}
+
+#custom-phone.phone-unauthorized {
+    background: alpha(@color3, 0.45);
+    color: @color3;
+}

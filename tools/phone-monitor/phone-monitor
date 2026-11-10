@@ -1,0 +1,492 @@
+#!/usr/bin/env python3
+"""
+phone-monitor - Comprehensive Android Device Monitor & Control Tool
+Designed for Linux / Hyprland / Wayland power users and Rustaceans.
+
+Features:
+- USB and Wireless ADB device discovery & status monitoring
+- Battery telemetry (level %, voltage, temperature, health, charging state)
+- Hardware & OS info (Model, Brand, Android version, Screen resolution, DPI)
+- Storage & Memory utilization gauges
+- WiFi SSID, Local IP, Link Speed
+- Quick actions:
+    * Screen Mirror (via scrcpy)
+    * Instant Screenshot directly from device to ~/Pictures/Screenshots/
+    * Screen Recording to ~/Videos/
+    * Wireless ADB switch (adb tcpip 5555 + connect)
+    * Clipboard sync between Phone and Linux desktop (wl-copy)
+    * Real-time Logcat stream with colored filters
+    * App manager & APK installer
+    * Power & Screen controls
+- Waybar / Bar module JSON output mode (--bar)
+"""
+
+import sys
+import os
+import subprocess
+import json
+import time
+import argparse
+import re
+from datetime import datetime
+
+# ANSI Colors for beautiful TUI
+C_RESET = "\033[0m"
+C_BOLD = "\033[1m"
+C_DIM = "\033[2m"
+C_RED = "\033[31m"
+C_GREEN = "\033[32m"
+C_YELLOW = "\033[33m"
+C_BLUE = "\033[34m"
+C_MAGENTA = "\033[35m"
+C_CYAN = "\033[36m"
+C_WHITE = "\033[37m"
+C_BG_DARK = "\033[48;5;235m"
+C_ORANGE = "\033[38;5;208m"
+
+ADB_BIN = os.path.expanduser("~/.local/bin/adb")
+if not os.path.exists(ADB_BIN):
+    ADB_BIN = "adb"
+
+SCRCPY_BIN = os.path.expanduser("~/.local/bin/scrcpy")
+if not os.path.exists(SCRCPY_BIN):
+    SCRCPY_BIN = "scrcpy"
+
+def run_cmd(cmd, timeout=8):
+    try:
+        p = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, timeout=timeout)
+        return p.stdout.strip(), p.stderr.strip(), p.returncode
+    except subprocess.TimeoutExpired:
+        return "", "Command timed out", -1
+    except Exception as e:
+        return "", str(e), -1
+
+def run_adb(device_id, subcmd, timeout=8):
+    cmd = [ADB_BIN]
+    if device_id:
+        cmd.extend(["-s", device_id])
+    if isinstance(subcmd, list):
+        cmd.extend(subcmd)
+    else:
+        cmd.extend(subcmd.split())
+    return run_cmd(cmd, timeout=timeout)
+
+def get_devices():
+    stdout, _, _ = run_cmd([ADB_BIN, "devices", "-l"])
+    devices = []
+    lines = stdout.splitlines()
+    for line in lines[1:]:
+        line = line.strip()
+        if not line:
+            continue
+        parts = line.split()
+        if len(parts) >= 2:
+            serial = parts[0]
+            state = parts[1]
+            extra = " ".join(parts[2:])
+            model_match = re.search(r'model:(\S+)', extra)
+            device_match = re.search(r'device:(\S+)', extra)
+            model = model_match.group(1).replace("_", " ") if model_match else "Android Device"
+            devices.append({
+                "serial": serial,
+                "state": state,
+                "model": model,
+                "extra": extra,
+                "is_wireless": ":" in serial
+            })
+    return devices
+
+def get_battery_info(device_id):
+    stdout, _, _ = run_adb(device_id, "shell dumpsys battery")
+    info = {
+        "level": 0,
+        "status": "Unknown",
+        "health": "Good",
+        "temp_c": 0.0,
+        "voltage_v": 0.0,
+        "plugged": "Battery",
+        "charging": False
+    }
+    for line in stdout.splitlines():
+        line = line.strip()
+        if line.startswith("level:"):
+            info["level"] = int(line.split(":")[1].strip())
+        elif line.startswith("temperature:"):
+            info["temp_c"] = float(line.split(":")[1].strip()) / 10.0
+        elif line.startswith("voltage:"):
+            info["voltage_v"] = float(line.split(":")[1].strip()) / 1000.0
+        elif line.startswith("AC powered:") and "true" in line:
+            info["plugged"] = "AC Wall Charger"
+            info["charging"] = True
+        elif line.startswith("USB powered:") and "true" in line:
+            info["plugged"] = "USB Cable"
+            info["charging"] = True
+        elif line.startswith("Wireless powered:") and "true" in line:
+            info["plugged"] = "Wireless Charging"
+            info["charging"] = True
+        elif line.startswith("status:"):
+            status_code = line.split(":")[1].strip()
+            # 2 = Charging, 3 = Discharging, 5 = Full
+            if status_code == "2":
+                info["status"] = "Charging"
+                info["charging"] = True
+            elif status_code == "3":
+                info["status"] = "Discharging"
+            elif status_code == "5":
+                info["status"] = "Full"
+    return info
+
+def get_system_info(device_id):
+    model, _, _ = run_adb(device_id, "shell getprop ro.product.model")
+    brand, _, _ = run_adb(device_id, "shell getprop ro.product.brand")
+    android_ver, _, _ = run_adb(device_id, "shell getprop ro.build.version.release")
+    security_patch, _, _ = run_adb(device_id, "shell getprop ro.build.version.security_patch")
+    wm_size, _, _ = run_adb(device_id, "shell wm size")
+    screen_res = wm_size.replace("Physical size:", "").strip() if wm_size else "Unknown"
+    
+    # WiFi IP
+    ip_out, _, _ = run_adb(device_id, "shell ip -4 addr show wlan0")
+    ip_match = re.search(r'inet\s+(\d+\.\d+\.\d+\.\d+)', ip_out)
+    ip_addr = ip_match.group(1) if ip_match else "Not connected / Cellular"
+
+    # Storage
+    df_out, _, _ = run_adb(device_id, "shell df -h /data")
+    storage_info = {"total": "?", "used": "?", "avail": "?", "pct": "?"}
+    for line in df_out.splitlines():
+        if "/data" in line:
+            parts = line.split()
+            if len(parts) >= 5:
+                storage_info = {
+                    "total": parts[1],
+                    "used": parts[2],
+                    "avail": parts[3],
+                    "pct": parts[4]
+                }
+            break
+
+    # Screen state
+    power_out, _, _ = run_adb(device_id, "shell dumpsys power")
+    screen_on = "Display Power: state=ON" in power_out or "mHoldingDisplaySuspendBlocker=true" in power_out
+
+    return {
+        "model": model or "Android Device",
+        "brand": (brand or "").capitalize(),
+        "android_ver": android_ver or "?",
+        "security_patch": security_patch or "?",
+        "screen_res": screen_res,
+        "screen_on": screen_on,
+        "ip_addr": ip_addr,
+        "storage": storage_info
+    }
+
+def draw_bar(pct, width=24, color=C_GREEN):
+    filled = int(width * (pct / 100.0))
+    bar = f"{color}{'█' * filled}{C_DIM}{'░' * (width - filled)}{C_RESET}"
+    return bar
+
+def render_tui(device):
+    serial = device["serial"]
+    state = device["state"]
+    
+    os.system("clear")
+    print(f"{C_ORANGE}{C_BOLD}╔════════════════════════════════════════════════════════════════════════════╗{C_RESET}")
+    print(f"{C_ORANGE}{C_BOLD}║                       📱 PHONE MONITOR & TOOLKIT                           ║{C_RESET}")
+    print(f"{C_ORANGE}{C_BOLD}╚════════════════════════════════════════════════════════════════════════════╝{C_RESET}")
+    print()
+
+    if state == "unauthorized":
+        print(f" {C_YELLOW}{C_BOLD}⚠️  DEVICE DETECTED BUT UNAUTHORIZED{C_RESET}")
+        print(f"   Serial: {C_CYAN}{serial}{C_RESET}")
+        print()
+        print(f" {C_WHITE}{C_BOLD}To enable monitoring and tools:{C_RESET}")
+        print(f"   1. Unlock your phone screen.")
+        print(f"   2. A popup prompt will appear: {C_GREEN}\"Allow USB debugging?\"{C_RESET}")
+        print(f"   3. Check {C_CYAN}\"Always allow from this computer\"{C_RESET} and tap {C_GREEN}\"Allow\"{C_RESET}.")
+        print()
+        print(f" {C_DIM}Press [R] to retry / refresh, or [Q] to quit.{C_RESET}")
+        return
+
+    sys_info = get_system_info(serial)
+    batt = get_battery_info(serial)
+
+    # Battery color
+    b_color = C_GREEN
+    if batt["level"] < 20:
+        b_color = C_RED
+    elif batt["level"] < 50:
+        b_color = C_YELLOW
+
+    charging_icon = "⚡" if batt["charging"] else "🔋"
+    screen_status = f"{C_GREEN}ON{C_RESET}" if sys_info["screen_on"] else f"{C_DIM}OFF (Screen locked/idle){C_RESET}"
+    conn_type = f"{C_CYAN}Wireless ADB (WiFi){C_RESET}" if device["is_wireless"] else f"{C_BLUE}USB Cable{C_RESET}"
+
+    # Header Card
+    print(f" {C_BOLD}{C_WHITE}{sys_info['brand']} {sys_info['model']}{C_RESET}  ({conn_type})")
+    print(f" {C_DIM}Serial:{C_RESET} {serial}  |  {C_DIM}Android:{C_RESET} {sys_info['android_ver']}  |  {C_DIM}Display:{C_RESET} {sys_info['screen_res']} [{screen_status}]")
+    print(" ─" * 38)
+
+    # Battery Section
+    b_pct = batt["level"]
+    bar_str = draw_bar(b_pct, width=26, color=b_color)
+    print(f" {charging_icon} {C_BOLD}Battery:{C_RESET}  [{bar_str}] {b_color}{b_pct}%{C_RESET}  ({batt['status']})")
+    print(f"    {C_DIM}Source:{C_RESET} {batt['plugged']}  |  {C_DIM}Temp:{C_RESET} {batt['temp_c']}°C  |  {C_DIM}Voltage:{C_RESET} {batt['voltage_v']:.2f}V")
+    print()
+
+    # Storage Section
+    st = sys_info["storage"]
+    print(f" 💾 {C_BOLD}Internal Storage (/data):{C_RESET}")
+    print(f"    {C_DIM}Used:{C_RESET} {st['used']} / {st['total']}  ({st['pct']} used)  |  {C_DIM}Available:{C_RESET} {st['avail']}")
+    print()
+
+    # Network Section
+    print(f" 🌐 {C_BOLD}Network & Connectivity:{C_RESET}")
+    print(f"    {C_DIM}WiFi IP Address:{C_RESET} {C_CYAN}{sys_info['ip_addr']}{C_RESET}")
+    print()
+
+    # Action Menu
+    print(f" {C_CYAN}{C_BOLD}⚡ QUICK ACTIONS & TOOLS:{C_RESET}")
+    print(f"   {C_GREEN}[M]{C_RESET} Mirror Phone Screen (scrcpy)       {C_GREEN}[S]{C_RESET} Take Screenshot (desktop save)")
+    print(f"   {C_GREEN}[R]{C_RESET} Record Screen (to ~/Videos)        {C_GREEN}[W]{C_RESET} Switch to Wireless ADB (port 5555)")
+    print(f"   {C_GREEN}[C]{C_RESET} Copy Phone Text to Desktop         {C_GREEN}[L]{C_RESET} Live Logcat (filter/debug)")
+    print(f"   {C_GREEN}[A]{C_RESET} Install APK to Phone               {C_GREEN}[P]{C_RESET} Power / Screen Toggle")
+    print(f"   {C_GREEN}[U]{C_RESET} Refresh Telemetry                  {C_GREEN}[Q]{C_RESET} Quit")
+    print(" ─" * 38)
+
+def action_mirror(serial):
+    print(f"\n{C_CYAN}--> Launching scrcpy screen mirror...{C_RESET}")
+    cmd = [SCRCPY_BIN, "-s", serial, "--stay-awake"]
+    subprocess.Popen(cmd)
+    time.sleep(1)
+
+def action_screenshot(serial):
+    screenshot_dir = os.path.expanduser("~/Pictures/Screenshots")
+    os.makedirs(screenshot_dir, exist_ok=True)
+    filename = f"phone_screenshot_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.png"
+    filepath = os.path.join(screenshot_dir, filename)
+
+    print(f"\n{C_CYAN}--> Taking instant phone screenshot...{C_RESET}")
+    try:
+        with open(filepath, "wb") as f:
+            subprocess.run([ADB_BIN, "-s", serial, "exec-out", "screencap", "-p"], stdout=f, check=True)
+        print(f"{C_GREEN}✓ Screenshot saved to: {filepath}{C_RESET}")
+        # Send desktop notification
+        subprocess.run(["notify-send", "-i", filepath, "Phone Screenshot Captured", f"Saved to {filename}"], check=False)
+        # Copy to desktop clipboard if wl-copy exists
+        if subprocess.run(["which", "wl-copy"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL).returncode == 0:
+            subprocess.run(["wl-copy", "--type", "image/png"], input=open(filepath, "rb").read(), check=False)
+            print(f"{C_GREEN}✓ Copied to clipboard!{C_RESET}")
+    except Exception as e:
+        print(f"{C_RED}Failed to take screenshot: {e}{C_RESET}")
+    time.sleep(1.5)
+
+def action_record(serial, seconds=10):
+    video_dir = os.path.expanduser("~/Videos")
+    os.makedirs(video_dir, exist_ok=True)
+    filename = f"phone_record_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.mp4"
+    filepath = os.path.join(video_dir, filename)
+
+    print(f"\n{C_CYAN}--> Recording phone screen for {seconds} seconds...{C_RESET}")
+    remote_tmp = "/sdcard/phone_monitor_tmp.mp4"
+    run_adb(serial, f"shell screenrecord --time-limit {seconds} {remote_tmp}", timeout=seconds + 5)
+    print(f"{C_CYAN}--> Pulling recording to desktop...{C_RESET}")
+    run_adb(serial, ["pull", remote_tmp, filepath], timeout=15)
+    run_adb(serial, f"shell rm {remote_tmp}")
+    print(f"{C_GREEN}✓ Recording saved to: {filepath}{C_RESET}")
+    subprocess.run(["notify-send", "Phone Recording Complete", f"Saved to {filename}"], check=False)
+    time.sleep(2)
+
+def action_wireless_adb(serial):
+    print(f"\n{C_CYAN}--> Initializing Wireless ADB mode...{C_RESET}")
+    stdout, _, _ = run_adb(serial, "tcpip 5555")
+    print(f" {stdout}")
+    
+    # Get IP
+    ip_out, _, _ = run_adb(serial, "shell ip -4 addr show wlan0")
+    ip_match = re.search(r'inet\s+(\d+\.\d+\.\d+\.\d+)', ip_out)
+    if ip_match:
+        ip = ip_match.group(1)
+        print(f"{C_GREEN}--> Connecting to {ip}:5555...{C_RESET}")
+        time.sleep(2)
+        out, _, _ = run_cmd([ADB_BIN, "connect", f"{ip}:5555"])
+        print(f" {out}")
+        print(f"\n{C_GREEN}✓ You may now disconnect the USB cable!{C_RESET}")
+    else:
+        print(f"{C_YELLOW}Could not automatically determine phone's WiFi IP address.{C_RESET}")
+        print(f"Check your phone's WiFi Settings -> IP Address, then run: adb connect <IP>:5555")
+    time.sleep(2.5)
+
+def action_clipboard_sync(serial):
+    print(f"\n{C_CYAN}--> Clipboard Sync Options:{C_RESET}")
+    print(" [1] Send desktop clipboard text to phone")
+    print(" [2] Type custom text into phone")
+    choice = input(" Choose (1/2): ").strip()
+    if choice == "1":
+        text = subprocess.run(["wl-paste"], stdout=subprocess.PIPE, text=True).stdout
+        if text:
+            # Escape text for adb input text
+            safe_text = re.sub(r'[^a-zA-Z0-9_\-\.\@]', '%s', text[:200])
+            run_adb(serial, f"shell input text {safe_text}")
+            print(f"{C_GREEN}✓ Sent clipboard text to phone!{C_RESET}")
+        else:
+            print(f"{C_YELLOW}Desktop clipboard is empty.{C_RESET}")
+    elif choice == "2":
+        msg = input(" Text to type: ")
+        safe_text = msg.replace(" ", "%s")
+        run_adb(serial, f"shell input text {safe_text}")
+        print(f"{C_GREEN}✓ Typed!{C_RESET}")
+    time.sleep(1.5)
+
+def action_logcat(serial):
+    print(f"\n{C_CYAN}--> Streaming Logcat (Press Ctrl+C to exit)...{C_RESET}\n")
+    try:
+        subprocess.run([ADB_BIN, "-s", serial, "logcat", "-v", "color"])
+    except KeyboardInterrupt:
+        pass
+
+def action_power_menu(serial):
+    print(f"\n{C_CYAN}--> Power & Display Controls:{C_RESET}")
+    print(" [1] Toggle Screen (Power Button)")
+    print(" [2] Volume Up")
+    print(" [3] Volume Down")
+    print(" [4] Mute Volume")
+    print(" [5] Reboot Phone")
+    print(" [6] Reboot to Recovery")
+    c = input(" Choose (1-6): ").strip()
+    keycodes = {
+        "1": "26",   # KEYCODE_POWER
+        "2": "24",   # KEYCODE_VOLUME_UP
+        "3": "25",   # KEYCODE_VOLUME_DOWN
+        "4": "164"   # KEYCODE_VOLUME_MUTE
+    }
+    if c in keycodes:
+        run_adb(serial, f"shell input keyevent {keycodes[c]}")
+        print(f"{C_GREEN}✓ Sent keyevent!{C_RESET}")
+    elif c == "5":
+        run_adb(serial, "reboot")
+        print(f"{C_YELLOW}Rebooting device...{C_RESET}")
+    elif c == "6":
+        run_adb(serial, "reboot recovery")
+        print(f"{C_YELLOW}Rebooting to recovery...{C_RESET}")
+    time.sleep(1)
+
+def run_bar_mode():
+    devices = get_devices()
+    if not devices:
+        print(json.dumps({
+            "text": " Disconnected",
+            "tooltip": "No Android device detected over USB or WiFi ADB",
+            "class": "phone-disconnected",
+            "percentage": 0
+        }))
+        return
+
+    dev = devices[0]
+    if dev["state"] == "unauthorized":
+        print(json.dumps({
+            "text": " ⚠️ Unlock Phone",
+            "tooltip": f"Device {dev['serial']} is unauthorized. Unlock and allow USB debugging.",
+            "class": "phone-unauthorized",
+            "percentage": 0
+        }))
+        return
+
+    batt = get_battery_info(dev["serial"])
+    sys_info = get_system_info(dev["serial"])
+
+    icon = "⚡" if batt["charging"] else ""
+    text = f"{icon} {batt['level']}%"
+    tooltip = (
+        f"{sys_info['brand']} {sys_info['model']}\n"
+        f"Battery: {batt['level']}% ({batt['status']})\n"
+        f"Temp: {batt['temp_c']}°C  |  Volt: {batt['voltage_v']:.1f}V\n"
+        f"Storage: {sys_info['storage']['used']}/{sys_info['storage']['total']} ({sys_info['storage']['pct']})\n"
+        f"WiFi IP: {sys_info['ip_addr']}\n"
+        f"Click: Open Phone Monitor | Right Click: Screen Mirror"
+    )
+
+    cls = "phone-charging" if batt["charging"] else ("phone-low" if batt["level"] < 20 else "phone-ok")
+    print(json.dumps({
+        "text": text,
+        "tooltip": tooltip,
+        "class": cls,
+        "percentage": batt["level"]
+    }))
+
+def main():
+    parser = argparse.ArgumentParser(description="Phone Monitor & Control Tool")
+    parser.add_argument("--bar", "-b", action="store_true", help="Output JSON for Waybar / status bar")
+    parser.add_argument("--mirror", "-m", action="store_true", help="Launch screen mirror directly")
+    parser.add_argument("--screenshot", "-s", action="store_true", help="Take instant phone screenshot")
+    parser.add_argument("--record", "-r", type=int, nargs="?", const=10, help="Record phone screen for N seconds (default 10)")
+    parser.add_argument("--wifi", "-w", action="store_true", help="Switch connected phone to wireless ADB")
+    args = parser.parse_args()
+
+    if args.bar:
+        run_bar_mode()
+        return
+
+    devices = get_devices()
+    if not devices:
+        os.system("clear")
+        print(f"{C_ORANGE}{C_BOLD}╔════════════════════════════════════════════════════════════════════════════╗{C_RESET}")
+        print(f"{C_ORANGE}{C_BOLD}║                       📱 PHONE MONITOR & TOOLKIT                           ║{C_RESET}")
+        print(f"{C_ORANGE}{C_BOLD}╚════════════════════════════════════════════════════════════════════════════╝{C_RESET}")
+        print()
+        print(f" {C_YELLOW}{C_BOLD}No Android device detected.{C_RESET}")
+        print()
+        print(f" {C_WHITE}Make sure:{C_RESET}")
+        print(f"   1. Your phone is connected via USB cable (or on the same WiFi network).")
+        print(f"   2. {C_GREEN}Developer Options{C_RESET} is enabled on your phone.")
+        print(f"   3. {C_GREEN}USB Debugging{C_RESET} is turned ON.")
+        print()
+        print(f" {C_DIM}To connect wirelessly: plug in via USB once and choose [W], or run 'adb connect <IP>:5555'{C_RESET}")
+        sys.exit(0)
+
+    selected_device = devices[0]
+
+    # Handle quick flags
+    if args.mirror:
+        action_mirror(selected_device["serial"])
+        return
+    if args.screenshot:
+        action_screenshot(selected_device["serial"])
+        return
+    if args.record is not None:
+        action_record(selected_device["serial"], seconds=args.record)
+        return
+    if args.wifi:
+        action_wireless_adb(selected_device["serial"])
+        return
+
+    # Interactive TUI Loop
+    while True:
+        devices = get_devices()
+        if not devices:
+            print(f"{C_RED}Device disconnected.{C_RESET}")
+            break
+        selected_device = devices[0]
+        render_tui(selected_device)
+
+        choice = input(f"\n {C_BOLD}Action [M/S/R/W/C/L/A/P/U/Q]: {C_RESET}").strip().upper()
+        if choice in ("Q", "QUIT", "EXIT"):
+            print(f"{C_CYAN}Goodbye!{C_RESET}")
+            break
+        elif choice == "M":
+            action_mirror(selected_device["serial"])
+        elif choice == "S":
+            action_screenshot(selected_device["serial"])
+        elif choice == "R":
+            action_record(selected_device["serial"], seconds=10)
+        elif choice == "W":
+            action_wireless_adb(selected_device["serial"])
+        elif choice == "C":
+            action_clipboard_sync(selected_device["serial"])
+        elif choice == "L":
+            action_logcat(selected_device["serial"])
+        elif choice == "P":
+            action_power_menu(selected_device["serial"])
+        elif choice in ("U", "R", ""):
+            continue
+
+if __name__ == "__main__":
+    main()

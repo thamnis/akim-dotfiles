@@ -255,6 +255,15 @@ chmod +x "$HOME/.config/swaync/"*.sh 2>/dev/null || true
 chmod +x "$HOME/.config/swaync/"*.py 2>/dev/null || true
 chmod +x "$HOME/.config/waypaper/wallpaper_script.sh" 2>/dev/null || true
 
+# 8a. Install Phone Monitor tool
+if [ -f "$REPO_ROOT/tools/phone-monitor/phone-monitor" ]; then
+    echo "--> Installing Phone Monitor & Toolkit..."
+    mkdir -p "$HOME/.local/bin" "$HOME/.local/share/applications"
+    cp "$REPO_ROOT/tools/phone-monitor/phone-monitor" "$HOME/.local/bin/phone-monitor"
+    chmod +x "$HOME/.local/bin/phone-monitor"
+    ln -sf "$HOME/.local/bin/phone-monitor" "$HOME/.local/bin/phone-mon"
+fi
+
 # 8b. Sync web app icons for Rofi & system
 if [ -x "$HOME/.config/hypr/scripts/sync-app-icons.sh" ]; then
     echo "--> Syncing web app icons for Rofi..."

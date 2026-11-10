@@ -12,6 +12,7 @@
         "hyprland/workspaces"
     ],
     "modules-right": [
+        "custom/phone",
         "group/expand",
         "bluetooth",
         "network",
@@ -152,6 +153,15 @@
     "temperature": {
         "critical-threshold": 80,
         "format": "",
+    },
+    "custom/phone": {
+        "format": "{}",
+        "return-type": "json",
+        "exec": "phone-monitor --bar",
+        "interval": 10,
+        "on-click": "alacritty -T 'Phone Monitor' -e phone-monitor",
+        "on-click-right": "phone-monitor --mirror",
+        "tooltip": true
     },
     "tray": {
         "icon-size": 14,

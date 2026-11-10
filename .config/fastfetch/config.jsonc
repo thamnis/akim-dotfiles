@@ -53,6 +53,11 @@
             "key": " WM"
         },
         {
+            "type": "command",
+            "key": "🦀 Rust",
+            "text": "rustc --version 2>/dev/null | awk '{print $2}'"
+        },
+        {
             "type": "custom",
             "format": "│"
         },

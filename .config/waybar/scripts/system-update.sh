@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# system-update.sh - Interactive system updater for Debian
+# system-update.sh - Interactive system updater for Arch Linux (Omarchy) and Debian
 
 BOLD="\033[1m"
 GREEN="\033[1;32m"
@@ -11,11 +11,23 @@ RESET="\033[0m"
 
 clear
 echo -e "${CYAN}========================================================================${RESET}"
-echo -e "${BOLD}                     󰅢  DEBIAN SYSTEM UPDATE & UPGRADE                 ${RESET}"
+echo -e "${BOLD}                     󰅢  SYSTEM UPDATE & UPGRADE                         ${RESET}"
 echo -e "${CYAN}========================================================================${RESET}"
 echo ""
 
-if command -v nala &>/dev/null; then
+if command -v omarchy &>/dev/null && [ -f /etc/arch-release ]; then
+    echo -e "${BLUE}==>${RESET} ${BOLD}Updating Omarchy Linux system...${RESET}"
+    echo ""
+    if command -v yay &>/dev/null; then
+        yay -Syu
+    else
+        sudo pacman -Syu
+    fi
+elif command -v pacman &>/dev/null; then
+    echo -e "${BLUE}==>${RESET} ${BOLD}Updating Arch packages with pacman...${RESET}"
+    echo ""
+    sudo pacman -Syu
+elif command -v nala &>/dev/null; then
     echo -e "${BLUE}==>${RESET} ${BOLD}Updating packages with nala...${RESET}"
     echo ""
     sudo nala update && sudo nala upgrade
@@ -31,7 +43,7 @@ elif command -v apt &>/dev/null; then
     echo -e "${YELLOW}--> Cleaning unused dependencies...${RESET}"
     sudo apt autoremove -y
 else
-    echo -e "${RED}Error: APT package manager not found.${RESET}"
+    echo -e "${RED}Error: Package manager not recognized.${RESET}"
 fi
 
 EXIT_CODE=$?
