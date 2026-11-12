@@ -373,8 +373,8 @@ def run_bar_mode():
     devices = get_devices()
     if not devices:
         print(json.dumps({
-            "text": " Disconnected",
-            "tooltip": "No Android device detected over USB or WiFi ADB",
+            "text": "󰄡 Pixel Offline",
+            "tooltip": "Google Pixel • Offline\nNo Android device detected over USB or WiFi ADB\nConnect USB or activate Wireless Debugging",
             "class": "phone-disconnected",
             "percentage": 0
         }))
@@ -383,8 +383,8 @@ def run_bar_mode():
     dev = devices[0]
     if dev["state"] == "unauthorized":
         print(json.dumps({
-            "text": " ⚠️ Unlock Phone",
-            "tooltip": f"Device {dev['serial']} is unauthorized. Unlock and allow USB debugging.",
+            "text": "󰄡 ⚠️ Unlock Pixel",
+            "tooltip": f"Device {dev['serial']} is unauthorized.\nUnlock your Pixel phone and accept the USB debugging prompt.",
             "class": "phone-unauthorized",
             "percentage": 0
         }))
@@ -393,15 +393,17 @@ def run_bar_mode():
     batt = get_battery_info(dev["serial"])
     sys_info = get_system_info(dev["serial"])
 
-    icon = "⚡" if batt["charging"] else ""
-    text = f"{icon} {batt['level']}%"
+    icon = "󰂄 " if batt["charging"] else ""
+    text = f"󰄡 {icon}{batt['level']}%"
     tooltip = (
-        f"{sys_info['brand']} {sys_info['model']}\n"
+        f"Google Pixel • {sys_info['brand']} {sys_info['model']}\n"
+        f"Android System: Android 17 / Pixel Experience\n"
         f"Battery: {batt['level']}% ({batt['status']})\n"
         f"Temp: {batt['temp_c']}°C  |  Volt: {batt['voltage_v']:.1f}V\n"
         f"Storage: {sys_info['storage']['used']}/{sys_info['storage']['total']} ({sys_info['storage']['pct']})\n"
-        f"WiFi IP: {sys_info['ip_addr']}\n"
-        f"Click: Open Phone Monitor | Right Click: Screen Mirror"
+        f"WiFi IP: {sys_info['ip_addr']}\n\n"
+        f"Left Click: Open Phone Monitor TUI\n"
+        f"Right Click: Launch Pixel Screen Mirror (scrcpy)"
     )
 
     cls = "phone-charging" if batt["charging"] else ("phone-low" if batt["level"] < 20 else "phone-ok")

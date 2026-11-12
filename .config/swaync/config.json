@@ -78,24 +78,24 @@
                     "update-command": "$HOME/.config/hypr/scripts/check-mic.sh"
                 },
                 {
-                    "label": "",
-                    "command": "kitty -e nmtui"
+                    "label": "󰤨",
+                    "command": "alacritty -e nmtui"
                 },
                 {
-                    "label": "",
+                    "label": "󰂯",
                     "type": "toggle",
                     "command": "$HOME/.config/hypr/scripts/toggle-bluetooth.sh",
                     "update-command": "$HOME/.config/hypr/scripts/check-bluetooth.sh"
                 },
                 {
-                    "label": "󰤄",
+                    "label": "󰂛",
                     "type": "toggle",
                     "command": "swaync-client -d -sw",
                     "update-command": "swaync-client -D"
                 },
                 {
-                    "label": "󰄪",
-                    "command": "kitty -e btop"
+                    "label": "󰄡",
+                    "command": "phone-monitor --mirror"
                 }
             ]
         }

@@ -1,10 +1,11 @@
--- Change the default Omarchy look'n'feel, merged with akim-dotfiles aesthetics.
+-- Android 17 / Google Pixel Material 3 Expressive - Look & Feel Configuration
+-- Merged with akim-dotfiles aesthetic & Omarchy window manager.
 
 -- https://wiki.hypr.land/Configuring/Basics/Variables/#general
 hl.config({
   general = {
-    gaps_in = 5,
-    gaps_out = 16,
+    gaps_in = 6,
+    gaps_out = 14,
     border_size = 2,
     resize_on_border = true,
     extend_border_grab_area = 15,
@@ -15,12 +16,12 @@ hl.config({
 -- https://wiki.hypr.land/Configuring/Basics/Variables/#decoration
 hl.config({
   decoration = {
-    -- Smooth rounded corners (akim-dotfiles style)
-    rounding = 10,
+    -- Android 17 Material 3 Expressive corner rounding
+    rounding = 16,
 
     -- Window opacity and focus dimming
-    active_opacity = 0.92,
-    inactive_opacity = 0.82,
+    active_opacity = 0.94,
+    inactive_opacity = 0.85,
     dim_inactive = true,
     dim_strength = 0.12,
 
@@ -34,9 +35,9 @@ hl.config({
 
     shadow = {
       enabled = true,
-      range = 14,
+      range = 20,
       render_power = 3,
-      color = "rgba(1a1a1aee)",
+      color = "rgba(0000003a)",
     },
   },
 })
@@ -46,8 +47,9 @@ hl.config({
   animations = {
     enabled = true,
     bezier = {
-      { name = "easeOutQuint", a = 0.23, b = 1, c = 0.32, d = 1 },
-      { name = "quick", a = 0.15, b = 0, c = 0.1, d = 1 },
+      { name = "md3_decel", a = 0.05, b = 0.7, c = 0.1, d = 1.0 },
+      { name = "md3_accel", a = 0.3, b = 0.0, c = 0.8, d = 0.15 },
+      { name = "quick", a = 0.15, b = 0.0, c = 0.1, d = 1.0 },
     },
   },
 })

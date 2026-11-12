@@ -1,162 +1,163 @@
 {
     "layer": "top",
     "position": "top",
+    "margin-top": 8,
+    "margin-left": 14,
+    "margin-right": 14,
+    "margin-bottom": 0,
     "reload_style_on_change": true,
     "modules-left": [
-        "custom/notification",
         "clock",
         "custom/pacman",
         "tray"
     ],
     "modules-center": [
-        "hyprland/workspaces",
-        "wlr/taskbar"
+        "hyprland/workspaces"
     ],
     "modules-right": [
+        "custom/phone",
         "group/expand",
-        "bluetooth",
         "network",
-        "battery"
+        "pulseaudio",
+        "battery",
+        "custom/notification"
     ],
-    "hyprland/workspaces": {
-        "format": "{name}",
-        "format-icons": {
-            "active": "",
-            "default": "",
-            "empty": ""
-        },
-        "persistent-workspaces": {
-            "*": [
-                1,
-                2,
-                3,
-                4,
-                5
-            ]
-        }
-    },
-    "wlr/taskbar": {
-        "format": "{icon}",
-        "icon-size": 18,
-        "tooltip-format": "{title}",
-        "on-click": "activate",
-        "on-click-middle": "close"
-    },
-    "custom/notification": {
-        "tooltip": false,
-        "format": "",
-        "on-click": "swaync-client -t -sw",
-        "escape": true
-    },
     "clock": {
-        "format": "{:%a %d %b  %I:%M:%S %p}",
+        "format": "󰊠  {:%a, %b %d  •  %H:%M}",
+        "format-alt": "󰃭  {:%A, %d %B %Y  •  %T}",
         "interval": 1,
-        "tooltip": false
-    },
-
-    "network": {
-        "format-wifi": "  ",
-        "format-ethernet": "  ",
-        "format-disconnected": "  ",
-        "tooltip-format-disconnected": "Error",
-        "tooltip-format-wifi": "{essid} ({signalStrength}%) ",
-        "tooltip-format-ethernet": "{ifname} 🖧 ",
-        "on-click": "kitty nmtui"
-    },
-    "bluetooth": {
-        "format-on": "󰂯",
-        "format-off": "BT-off",
-        "format-disabled": "󰂲",
-        "format-connected-battery": "{device_battery_percentage}% 󰂯",
-        "format-alt": "{device_alias} 󰂯",
-        "tooltip-format": "{controller_alias}\t{controller_address}\n\n{num_connections} connected",
-        "tooltip-format-connected": "{controller_alias}\t{controller_address}\n\n{num_connections} connected\n\n{device_enumerate}",
-        "tooltip-format-enumerate-connected": "{device_alias}\n{device_address}",
-        "tooltip-format-enumerate-connected-battery": "{device_alias}\n{device_address}\n{device_battery_percentage}%",
-        "on-click-right": "blueman-manager",
-    },
-    "battery": {
-        "interval": 1,
-        "states": {
-            "good": 95,
-            "warning": 30,
-            "critical": 15
-        },
-        "format": "{capacity}% {icon}",
-        "format-charging": "{capacity}% 󰂄",
-        "format-plugged": "{capacity}% 󰚥",
-        "format-discharging": "{capacity}% {icon}",
-        "format-full": "{capacity}% 󰁹",
-        "format-icons": [
-            "󰂃",
-            "󰁺",
-            "󰁻",
-            "󰁼",
-            "󰁽",
-            "󰁾",
-            "󰁿",
-            "󰂀",
-            "󰂁",
-            "󰂂",
-            "󰁹"
-        ],
         "tooltip": true,
-        "tooltip-format": "{capacity}%\nClick: Power Mode Menu",
-        "on-click": "~/.config/hypr/scripts/power-mode.sh menu"
+        "tooltip-format": "<tt><small>{calendar}</small></tt>"
     },
     "custom/pacman": {
         "format": "󰅢 {}",
         "interval": 3600,
         "exec": "~/.config/waybar/scripts/check-updates.sh",
-        "on-click": "kitty --class update-terminal -e ~/.config/waybar/scripts/system-update.sh",
+        "on-click": "alacritty --class update-terminal -e ~/.config/waybar/scripts/system-update.sh",
         "signal": 8,
-        "tooltip": false
+        "tooltip": true,
+        "tooltip-format": "Arch Updates Available\nClick to update system"
+    },
+    "hyprland/workspaces": {
+        "format": "{icon}",
+        "format-icons": {
+            "active": "󰮯",
+            "occupied": "•",
+            "default": "•",
+            "empty": "•"
+        },
+        "sort-by-number": true,
+        "on-click": "activate",
+        "tooltip": true,
+        "tooltip-format": "Workspace {name}",
+        "persistent-workspaces": {
+            "*": [1, 2, 3, 4, 5]
+        }
+    },
+    "custom/phone": {
+        "format": "{}",
+        "return-type": "json",
+        "exec": "phone-monitor --bar",
+        "interval": 8,
+        "on-click": "alacritty -T 'Phone Monitor' -e phone-monitor",
+        "on-click-right": "phone-monitor --mirror",
+        "tooltip": true
     },
     "custom/expand": {
-        "format": "",
+        "format": "󰄼",
         "tooltip": false
     },
     "custom/endpoint": {
-        "format": "|",
+        "format": " ",
         "tooltip": false
     },
     "group/expand": {
         "orientation": "horizontal",
         "drawer": {
-            "transition-duration": 600,
+            "transition-duration": 400,
             "transition-to-left": true,
             "click-to-reveal": true
         },
         "modules": [
             "custom/expand",
-            "custom/colorpicker",
             "cpu",
             "memory",
             "temperature",
             "custom/endpoint"
-        ],
-    },
-    "custom/colorpicker": {
-        "format": "{}",
-        "return-type": "json",
-        "interval": "once",
-        "exec": "~/.config/waybar/scripts/colorpicker.sh -j",
-        "on-click": "~/.config/waybar/scripts/colorpicker.sh",
-        "signal": 1
+        ]
     },
     "cpu": {
-        "format": "󰻠",
-        "tooltip": true
+        "format": "󰻠 {usage}%",
+        "interval": 2,
+        "tooltip": true,
+        "on-click": "alacritty -e btop"
     },
     "memory": {
-        "format": ""
+        "format": "󰍛 {percentage}%",
+        "interval": 3,
+        "tooltip-format": "RAM: {used:0.1f}GiB / {total:0.1f}GiB",
+        "on-click": "alacritty -e btop"
     },
     "temperature": {
         "critical-threshold": 80,
-        "format": "",
+        "format": " {temperatureC}°C",
+        "tooltip": true
+    },
+    "network": {
+        "format-wifi": "󰤨  {essid}",
+        "format-ethernet": "󰈀  {ifname}",
+        "format-disconnected": "󰤭  Offline",
+        "format-disabled": "󰤮  Disabled",
+        "rfkill": false,
+        "tooltip-format-disconnected": "Network Disconnected",
+        "tooltip-format-wifi": "SSID: {essid}\nStrength: {signalStrength}%\nIP: {ipaddr}",
+        "tooltip-format-ethernet": "Interface: {ifname}\nIP: {ipaddr}",
+        "on-click": "alacritty -e nmtui"
+    },
+    "pulseaudio": {
+        "format": "{icon} {volume}%",
+        "format-muted": "󰝟 Muted",
+        "format-icons": {
+            "headphone": "󰋋",
+            "hands-free": "󰋋",
+            "headset": "󰋋",
+            "phone": "󰄡",
+            "portable": "󰄡",
+            "car": "󰄋",
+            "default": ["󰕿", "󰖀", "󰕾"]
+        },
+        "on-click": "pactl set-sink-mute @DEFAULT_SINK@ toggle",
+        "on-click-right": "alacritty -e pulsemixer",
+        "scroll-step": 4,
+        "tooltip": true,
+        "tooltip-format": "{desc} • {volume}%"
+    },
+    "battery": {
+        "interval": 2,
+        "states": {
+            "good": 95,
+            "warning": 30,
+            "critical": 15
+        },
+        "format": "{icon} {capacity}%",
+        "format-charging": "󰂄 {capacity}%",
+        "format-plugged": "󰚥 {capacity}%",
+        "format-discharging": "{icon} {capacity}%",
+        "format-full": "󰁹 {capacity}%",
+        "format-icons": ["󰂃", "󰁺", "󰁻", "󰁼", "󰁽", "󰁾", "󰁿", "󰂀", "󰂁", "󰂂", "󰁹"],
+        "tooltip": true,
+        "tooltip-format": "{capacity}% ({time})\nClick: Power Mode Menu",
+        "on-click": "~/.config/hypr/scripts/power-mode.sh menu"
+    },
+    "custom/notification": {
+        "tooltip": true,
+        "tooltip-format": "Notifications & Quick Settings\nClick to open shade",
+        "format": "󰂚",
+        "on-click": "swaync-client -t -sw",
+        "escape": true
     },
     "tray": {
-        "icon-size": 14,
+        "icon-size": 15,
         "spacing": 10
-    },
+    }
 }
