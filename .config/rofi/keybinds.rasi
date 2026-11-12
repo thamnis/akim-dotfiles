@@ -1,9 +1,5 @@
 @import "~/.cache/wal/colors-rofi-dark"
 
-/* =============================================================================
- * Android 17 / Material 3 Expressive - Keybinds Cheatsheet
- * ============================================================================= */
-
 configuration {
     font: "JetBrainsMono Nerd Font 11";
     show-icons: false;
@@ -21,50 +17,49 @@ configuration {
 }
 
 window {
-    width: 840px;
-    height: 580px;
-    border-radius: 28px;
+    width: 820px;
+    height: 560px;
+    border-radius: 18px;
     border: 2px;
-    border-color: alpha(@selected-normal-background, 0.45);
-    background-color: alpha(@background-color, 0.90);
+    border-color: @border-color;
+    background-color: @background-color;
     padding: 0px;
 }
 
 mainbox {
-    border-radius: 28px;
-    padding: 22px;
-    spacing: 16px;
+    border-radius: 18px;
+    padding: 18px;
+    spacing: 14px;
     children: [ inputbar, listview ];
 }
 
 inputbar {
-    background-color: rgba(255, 255, 255, 0.08);
-    border-radius: 9999px;
-    padding: 10px 20px;
-    spacing: 12px;
+    background-color: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    padding: 10px 14px;
+    spacing: 10px;
     border: 1px;
-    border-color: rgba(255, 255, 255, 0.12);
+    border-color: rgba(255, 255, 255, 0.08);
     children: [ prompt, entry ];
 }
 
 prompt {
     text-color: @selected-normal-background;
-    font: "JetBrainsMono Nerd Font Bold 14";
+    font: "JetBrainsMono Nerd Font Bold 12";
     vertical-align: 0.5;
 }
 
 entry {
     placeholder: "Search shortcuts by key or action...";
-    placeholder-color: rgba(255, 255, 255, 0.40);
+    placeholder-color: rgba(255, 255, 255, 0.35);
     text-color: @text-color;
-    font: "JetBrainsMono Nerd Font 11";
     vertical-align: 0.5;
 }
 
 listview {
     lines: 11;
     columns: 1;
-    spacing: 6px;
+    spacing: 4px;
     scrollbar: true;
 }
 
@@ -78,9 +73,9 @@ scrollbar {
 }
 
 element {
-    border-radius: 14px;
-    padding: 10px 14px;
-    spacing: 12px;
+    border-radius: 10px;
+    padding: 8px 12px;
+    spacing: 10px;
 }
 
 element normal.normal {
@@ -96,7 +91,6 @@ element alternate.normal {
 element selected.normal {
     background-color: @selected-normal-background;
     text-color: @selected-normal-foreground;
-    border-radius: 14px;
 }
 
 element-text {

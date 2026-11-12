@@ -1,14 +1,10 @@
 @import "~/.cache/wal/colors-rofi-dark"
 
-/* =============================================================================
- * Android 17 / Google Pixel Material 3 Expressive - App Drawer Launcher
- * ============================================================================= */
-
 configuration {
     font: "JetBrainsMono Nerd Font 11";
     show-icons: true;
     icon-theme: "Papirus-Dark";
-    drun-display-format: "{name}";
+    drun-display-format: "{name} [<span weight='light' size='small' alpha='60%'><i>({generic})</i></span>]";
     location: 0;
     yoffset: 0;
     xoffset: 0;
@@ -16,9 +12,9 @@ configuration {
     hide-scrollbar: true;
     click-to-exit: true;
     cycle: true;
-    display-drun: "󰊠";
-    display-run: "󰌑";
-    display-window: "󰖲";
+    display-drun: " 󰍉 ";
+    display-run: " 󰌑 ";
+    display-window: " 󰖲 ";
 }
 
 * {
@@ -26,61 +22,56 @@ configuration {
 }
 
 window {
-    width: 740px;
-    border-radius: 28px;
+    width: 580px;
+    border-radius: 16px;
     border: 2px;
-    border-color: alpha(@selected-normal-background, 0.45);
-    background-color: alpha(@background-color, 0.90);
+    border-color: @border-color;
+    background-color: @background-color;
     padding: 0px;
 }
 
 mainbox {
-    border-radius: 28px;
-    padding: 24px;
-    spacing: 18px;
+    border-radius: 16px;
+    padding: 16px;
+    spacing: 12px;
     children: [ inputbar, listview ];
 }
 
 inputbar {
-    background-color: rgba(255, 255, 255, 0.08);
-    border-radius: 9999px;
-    padding: 12px 22px;
-    spacing: 14px;
+    background-color: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    padding: 10px 14px;
+    spacing: 10px;
     border: 1px;
-    border-color: rgba(255, 255, 255, 0.12);
+    border-color: rgba(255, 255, 255, 0.08);
     children: [ prompt, entry ];
 }
 
 prompt {
     text-color: @selected-normal-background;
-    font: "JetBrainsMono Nerd Font Bold 16";
+    font: "JetBrainsMono Nerd Font 13";
     vertical-align: 0.5;
 }
 
 entry {
-    placeholder: "Search your phone and apps...";
-    placeholder-color: rgba(255, 255, 255, 0.40);
+    placeholder: "Type to search apps...";
+    placeholder-color: rgba(255, 255, 255, 0.35);
     text-color: @text-color;
-    font: "JetBrainsMono Nerd Font 12";
     vertical-align: 0.5;
 }
 
 listview {
-    lines: 4;
-    columns: 5;
-    spacing: 14px;
-    padding: 8px 0px 4px 0px;
+    lines: 7;
+    columns: 1;
+    spacing: 4px;
+    padding: 4px 0px 0px 0px;
     scrollbar: false;
-    fixed-columns: true;
-    cycle: true;
 }
 
 element {
-    orientation: vertical;
-    children: [ "element-icon", "element-text" ];
-    padding: 16px 8px 12px 8px;
-    border-radius: 20px;
-    spacing: 10px;
+    padding: 8px 12px;
+    border-radius: 10px;
+    spacing: 12px;
     background-color: transparent;
     text-color: @text-color;
     cursor: pointer;
@@ -94,31 +85,27 @@ element normal.normal {
 element normal.urgent {
     background-color: @urgent-background;
     text-color: @urgent-foreground;
-    border-radius: 20px;
 }
 
 element normal.active {
-    background-color: rgba(255, 255, 255, 0.08);
+    background-color: rgba(255, 255, 255, 0.06);
     text-color: @selected-normal-background;
-    border-radius: 20px;
 }
 
 element selected.normal {
     background-color: @selected-normal-background;
     text-color: @selected-normal-foreground;
-    border-radius: 20px;
+    border-radius: 10px;
 }
 
 element selected.urgent {
     background-color: @urgent-background;
     text-color: @urgent-foreground;
-    border-radius: 20px;
 }
 
 element selected.active {
     background-color: @selected-normal-background;
     text-color: @selected-normal-foreground;
-    border-radius: 20px;
 }
 
 element alternate.normal {
@@ -127,16 +114,13 @@ element alternate.normal {
 }
 
 element-icon {
-    size: 56px;
-    horizontal-align: 0.5;
-    vertical-align: 0.5;
+    size: 30px;
     cursor: inherit;
+    vertical-align: 0.5;
 }
 
 element-text {
-    horizontal-align: 0.5;
     vertical-align: 0.5;
-    font: "JetBrainsMono Nerd Font 10.5";
     cursor: inherit;
     text-color: inherit;
 }

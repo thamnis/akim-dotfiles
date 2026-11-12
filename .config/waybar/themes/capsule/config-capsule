@@ -1,106 +1,87 @@
 {
     "layer": "top",
     "position": "top",
-    "margin-top": 8,
-    "margin-left": 14,
-    "margin-right": 14,
+    "margin-top": 6,
+    "margin-left": 10,
+    "margin-right": 10,
     "margin-bottom": 0,
     "reload_style_on_change": true,
     "modules-left": [
         "clock",
-        "custom/pacman"
+        "bluetooth",
+        "network",
+        "battery"
     ],
     "modules-center": [
+        "custom/pacman",
         "hyprland/workspaces"
     ],
     "modules-right": [
-        "custom/phone",
-        "network",
-        "pulseaudio",
-        "battery",
         "custom/notification",
         "tray"
     ],
-    "clock": {
-        "format": "󰊠  {:%a, %b %d  •  %H:%M}",
-        "format-alt": "󰃭  {:%A, %d %B %Y  •  %T}",
-        "interval": 1,
-        "tooltip": true,
-        "tooltip-format": "<tt><small>{calendar}</small></tt>"
-    },
-    "custom/pacman": {
-        "format": "󰅢 {}",
-        "interval": 3600,
-        "exec": "~/.config/waybar/scripts/check-updates.sh",
-        "on-click": "alacritty --class update-terminal -e ~/.config/waybar/scripts/system-update.sh",
-        "signal": 8,
-        "tooltip": true,
-        "tooltip-format": "Updates Available"
-    },
     "hyprland/workspaces": {
-        "format": "{icon}",
+        "format": "{name}",
         "format-icons": {
-            "active": "󰮯",
-            "occupied": "•",
-            "default": "•",
-            "empty": "•"
+            "active": "",
+            "default": "",
+            "empty": ""
         },
         "persistent-workspaces": {
             "*": [1, 2, 3, 4, 5]
         }
     },
-    "custom/phone": {
-        "format": "{}",
-        "return-type": "json",
-        "exec": "phone-monitor --bar",
-        "interval": 8,
-        "on-click": "alacritty -T 'Phone Monitor' -e phone-monitor",
-        "on-click-right": "phone-monitor --mirror",
-        "tooltip": true
+    "custom/notification": {
+        "tooltip": false,
+        "format": "",
+        "on-click": "swaync-client -t -sw",
+        "escape": true
+    },
+    "custom/pacman": {
+        "format": "󰮯",
+        "tooltip": false,
+        "on-click": "~/.config/hypr/scripts/rofi-toggle.sh"
+    },
+    "clock": {
+        "format": "󰃭 {:%a %d %b  %I:%M:%S %p}",
+        "interval": 1,
+        "tooltip": false
     },
     "network": {
-        "format-wifi": "󰤨  {essid}",
+        "format-wifi": "󰤨",
         "format-ethernet": "󰈀",
         "format-disconnected": "󰤭",
         "format-disabled": "󰤮",
-        "tooltip": true,
-        "tooltip-format-wifi": "SSID: {essid} ({signalStrength}%)",
-        "on-click": "alacritty -e nmtui"
+        "tooltip": false,
+        "on-click": "kitty nmtui"
     },
-    "pulseaudio": {
-        "format": "{icon} {volume}%",
-        "format-muted": "󰝟",
-        "format-icons": {
-            "default": ["󰕿", "󰖀", "󰕾"]
-        },
-        "on-click": "pactl set-sink-mute @DEFAULT_SINK@ toggle",
-        "scroll-step": 4,
-        "tooltip": true
+    "bluetooth": {
+        "format-on": "󰂯",
+        "format-off": "󰂲",
+        "format-disabled": "󰂲",
+        "format-connected": "󰂱",
+        "tooltip": false,
+        "on-click": "blueman-manager"
     },
     "battery": {
-        "interval": 2,
+        "interval": 1,
         "states": {
             "good": 95,
             "warning": 30,
             "critical": 15
         },
-        "format": "{icon} {capacity}%",
-        "format-charging": "󰂄 {capacity}%",
-        "format-plugged": "󰚥 {capacity}%",
-        "format-full": "󰁹 {capacity}%",
+        "format": "{capacity}% {icon}",
+        "format-charging": "{capacity}% 󰂄",
+        "format-plugged": "{capacity}% 󰚥",
+        "format-discharging": "{capacity}% {icon}",
+        "format-full": "{capacity}% 󰁹",
         "format-icons": ["󰂃", "󰁺", "󰁻", "󰁼", "󰁽", "󰁾", "󰁿", "󰂀", "󰂁", "󰂂", "󰁹"],
         "tooltip": true,
+        "tooltip-format": "{capacity}%\nClick: Power Mode Menu",
         "on-click": "~/.config/hypr/scripts/power-mode.sh menu"
     },
-    "custom/notification": {
-        "tooltip": true,
-        "tooltip-format": "Notifications & Control Center",
-        "format": "󰂚",
-        "on-click": "swaync-client -t -sw",
-        "escape": true
-    },
     "tray": {
-        "icon-size": 15,
+        "icon-size": 16,
         "spacing": 8
     }
 }

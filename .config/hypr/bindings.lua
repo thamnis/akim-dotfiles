@@ -2,14 +2,6 @@
 -- unbind defaults before replacing them.
 
 -- ============================================================================
--- Android 17 / Pixel App Drawer (from akim-dotfiles & Material 3 Expressive)
--- ============================================================================
--- Replaces SUPER + SPACE (was: Omarchy menu) with Google Pixel Rofi App Drawer
-o.rebind("SUPER + SPACE", "Pixel App Drawer", os.getenv("HOME") .. "/.config/hypr/scripts/rofi-toggle.sh")
-o.bind("SUPER + D", "Pixel App Drawer", os.getenv("HOME") .. "/.config/hypr/scripts/rofi-toggle.sh")
-o.bind("SUPER + A", "Pixel App Drawer", os.getenv("HOME") .. "/.config/hypr/scripts/rofi-toggle.sh")
-
--- ============================================================================
 -- Phone Monitor & Tools (Added for Android / Phone integration)
 -- ============================================================================
 -- Replaces SUPER + SHIFT + M (was: Music webapp) with Phone Monitor

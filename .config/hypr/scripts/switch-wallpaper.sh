@@ -48,24 +48,24 @@ filename=$(basename "$selected")
 ln -sf "$selected" "$CURRENT"
 real_current=$(readlink -f "$CURRENT")
 
-# Applique le fond d'écran via awww (si disponible) ou swaybg
-if command -v awww &>/dev/null; then
-    if ! pgrep -x awww-daemon >/dev/null; then
-        awww-daemon & disown
-        sleep 0.5
-    fi
-    TRANSITIONS=("wipe" "outer" "wave" "grow")
-    TRANS_TYPE="${TRANSITIONS[$((index % ${#TRANSITIONS[@]}))]}"
-    awww img "$real_current" \
-        --transition-type "$TRANS_TYPE" \
-        --transition-angle 30 \
-        --transition-step 90 \
-        --transition-fps 60 \
-        --filter Lanczos3 \
-        --resize crop
-elif command -v swaybg &>/dev/null; then
-    pkill -x swaybg 2>/dev/null || true
-    swaybg -m fill -i "$real_current" & disown
+# Initialise le démon awww s'il n'est pas lancé
+if ! pgrep -x awww-daemon >/dev/null; then
+    awww-daemon & disown
+    sleep 0.5
 fi
+
+# Transitions élégantes alternées (wipe, outer, wave, grow)
+TRANSITIONS=("wipe" "outer" "wave" "grow")
+TRANS_TYPE="${TRANSITIONS[$((index % ${#TRANSITIONS[@]}))]}"
+
+# Applique l'image originale avec rendu GPU matériel HD (Filtre Lanczos3 pour netteté maximale)
+awww img "$real_current" \
+    --transition-type "$TRANS_TYPE" \
+    --transition-angle 30 \
+    --transition-step 90 \
+    --transition-fps 60 \
+    --filter Lanczos3 \
+    --resize crop
+
 
 "$APPLY_THEME" "$real_current"

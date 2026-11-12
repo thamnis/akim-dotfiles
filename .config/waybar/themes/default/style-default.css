@@ -1,298 +1,185 @@
-/* =============================================================================
- * Android 17 / Google Pixel Material 3 Expressive - Waybar Stylesheet
- * ============================================================================= */
-
-/* Fallback colors if Pywal cache is initializing */
-@define-color background #141218;
-@define-color foreground #e6e0e9;
-@define-color color1 #d0bcff;
-@define-color color2 #ccc2dc;
-@define-color color3 #efb8c8;
-@define-color color4 #49454f;
-@define-color color7 #e6e0e9;
-@define-color color9 #f2b8b5;
-
-/* Import dynamic Monet palette from Pywal */
 @import url("colors-waybar.css");
 
 * {
-    font-size: 13.5px;
-    font-family: "JetBrainsMono Nerd Font", "Roboto", "Cantarell", sans-serif;
-    font-weight: 500;
+    font-size:15px;
+    font-family: "JetBrainsMono Nerd Font";
 }
-
-window#waybar {
-    all: unset;
-    background: transparent;
+window#waybar{
+    all:unset;
 }
-
-/* -----------------------------------------------------------------------------
- * Floating Material 3 Capsule Containers
- * ----------------------------------------------------------------------------- */
 .modules-left {
-    padding: 3px 14px;
-    margin: 6px 0px 0px 12px;
-    border-radius: 9999px;
-    background: alpha(@background, 0.78);
-    border: 1px solid alpha(@foreground, 0.12);
-    box-shadow: 0px 4px 14px rgba(0, 0, 0, 0.32);
+    padding:7px;
+    margin:10 0 5 10;
+    border-radius:10px;
+    background: alpha(@background,.6);
+    box-shadow: 0px 0px 2px rgba(0, 0, 0, .6);
 }
-
 .modules-center {
-    padding: 3px 10px;
-    margin: 6px 0px 0px 0px;
-    border-radius: 9999px;
-    background: alpha(@background, 0.78);
-    border: 1px solid alpha(@foreground, 0.12);
-    box-shadow: 0px 4px 14px rgba(0, 0, 0, 0.32);
+    padding:7px;
+    margin:10 0 5 0;
+    border-radius:10px;
+    background: alpha(@background,.6);
+    box-shadow: 0px 0px 2px rgba(0, 0, 0, .6);
 }
-
 .modules-right {
-    padding: 3px 14px;
-    margin: 6px 12px 0px 0px;
-    border-radius: 9999px;
-    background: alpha(@background, 0.78);
-    border: 1px solid alpha(@foreground, 0.12);
-    box-shadow: 0px 4px 14px rgba(0, 0, 0, 0.32);
+    padding:7px;
+    margin: 10 10 5 0;
+    border-radius:10px;
+    background: alpha(@background,.6);
+    box-shadow: 0px 0px 2px rgba(0, 0, 0, .6);
 }
-
-/* Tooltip - Android 17 Tonal Surface */
 tooltip {
-    background: alpha(@background, 0.94);
-    border: 1px solid alpha(@foreground, 0.16);
-    border-radius: 16px;
-    padding: 8px 12px;
-    color: @foreground;
-    box-shadow: 0px 6px 16px rgba(0, 0, 0, 0.45);
+    background:@background;
+    color: @color7;
 }
-
-tooltip label {
-    color: @foreground;
-    font-size: 12.5px;
+#clock:hover, #custom-pacman:hover, #custom-notification:hover,#bluetooth:hover,#network:hover,#battery:hover, #cpu:hover,#memory:hover,#temperature:hover{
+    transition: all .3s ease;
+    color:@color9;
 }
-
-/* -----------------------------------------------------------------------------
- * Google Pixel "At a Glance" Clock Pill
- * ----------------------------------------------------------------------------- */
-#clock {
-    padding: 3px 10px;
-    color: @foreground;
-    font-weight: 600;
-    border-radius: 9999px;
-    transition: all 0.25s cubic-bezier(0.4, 0.0, 0.2, 1);
+#custom-notification {
+    padding: 0px 5px;
+    transition: all .3s ease;
+    color:@color7;
 }
-
-#clock:hover {
-    background: alpha(@foreground, 0.12);
-    color: @color1;
+#clock{
+    padding: 0px 5px;
+    color:@color7;
+    transition: all .3s ease;
 }
+#custom-pacman{
+    padding: 0px 5px;
+    transition: all .3s ease;
+    color:@color7;
 
-#custom-pacman {
-    padding: 3px 8px;
-    margin-left: 4px;
-    color: @color1;
-    border-radius: 9999px;
-    transition: all 0.25s ease;
 }
-
-#custom-pacman:hover {
-    background: alpha(@color1, 0.20);
-}
-
-/* -----------------------------------------------------------------------------
- * Workspaces - Android 17 Expressive Pagination Pill
- * ----------------------------------------------------------------------------- */
 #workspaces {
-    padding: 0px;
+    padding: 0px 5px;
 }
-
 #workspaces button {
-    all: unset;
-    padding: 2px 8px;
-    margin: 2px 2px;
-    color: alpha(@foreground, 0.40);
-    border-radius: 9999px;
-    font-size: 13px;
-    transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+    all:unset;
+    padding: 0px 5px;
+    color: alpha(@color9,.4);
+    transition: all .2s ease;
 }
-
 #workspaces button:hover {
-    color: @foreground;
-    background: alpha(@foreground, 0.10);
+    color:rgba(0,0,0,0);
+    border: none;
+    text-shadow: 0px 0px 1.5px rgba(0, 0, 0, .5);
+    transition: all 1s ease;
 }
-
 #workspaces button.active,
 #workspaces button.focused {
     color: @background;
-    background-color: @color1;
-    font-weight: 700;
-    padding: 2px 14px;
-    border-radius: 9999px;
-    box-shadow: 0px 2px 8px alpha(@color1, 0.40);
+    background-color: @color9;
+    border-radius: 5px;
+    border: none;
+    text-shadow: none;
+    transition: all .3s ease;
 }
-
-#workspaces button.urgent {
+#workspaces button.empty {
+    color: rgba(0,0,0,0);
+    border: none;
+    text-shadow: 0px 0px 1.5px rgba(0, 0, 0, .2);
+}
+#workspaces button.empty:hover {
+    color: rgba(0,0,0,0);
+    border: none;
+    text-shadow: 0px 0px 1.5px rgba(0, 0, 0, .5);
+    transition: all 1s ease;
+}
+#workspaces button.empty.active,
+#workspaces button.empty.focused {
     color: @background;
     background-color: @color9;
-    padding: 2px 12px;
-    border-radius: 9999px;
+    border-radius: 5px;
+    border: none;
+    text-shadow: none;
+    transition: all .3s ease;
 }
 
-/* -----------------------------------------------------------------------------
- * Google Pixel Phone Monitor Pill
- * ----------------------------------------------------------------------------- */
-#custom-phone {
-    padding: 3px 10px;
-    margin-right: 4px;
-    border-radius: 9999px;
-    background: alpha(@foreground, 0.06);
-    color: @foreground;
-    font-weight: 600;
-    transition: all 0.25s cubic-bezier(0.4, 0.0, 0.2, 1);
+#taskbar button {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+}
+#bluetooth{
+    padding: 0px 5px;
+    transition: all .3s ease;
+    color:@color7;
+
+}
+#network{
+    padding: 0px 5px;
+    transition: all .3s ease;
+    color:@color7;
+
+}
+#battery{
+    padding: 0px 5px;
+    transition: all .3s ease;
+    color:@color7;
+
+
+}
+#battery.charging {
+    color: #26A65B;
 }
 
-#custom-phone.phone-charging {
-    background: alpha(@color2, 0.22);
-    color: @color2;
-    border: 1px solid alpha(@color2, 0.35);
-}
-
-#custom-phone.phone-ok {
-    background: alpha(@color1, 0.16);
-    color: @foreground;
-}
-
-#custom-phone.phone-low {
-    background: alpha(@color9, 0.25);
-    color: @color9;
-    animation: blinker 1.5s linear infinite;
-}
-
-#custom-phone.phone-disconnected {
-    color: alpha(@foreground, 0.50);
-}
-
-#custom-phone:hover {
-    background: alpha(@color1, 0.25);
-    color: @color1;
-}
-
-/* -----------------------------------------------------------------------------
- * Hardware Drawer & Sensors
- * ----------------------------------------------------------------------------- */
-#custom-expand {
-    padding: 3px 6px;
-    color: alpha(@foreground, 0.55);
-    border-radius: 9999px;
-}
-
-#cpu, #memory, #temperature {
-    padding: 3px 8px;
-    color: alpha(@foreground, 0.85);
-    border-radius: 9999px;
-    transition: all 0.2s ease;
-}
-
-#cpu:hover, #memory:hover, #temperature:hover {
-    background: alpha(@foreground, 0.12);
-    color: @color1;
-}
-
-#temperature.critical {
-    color: @color9;
-    font-weight: 700;
-}
-
-/* -----------------------------------------------------------------------------
- * Status Bar Icons (Network, PulseAudio, Battery, SwayNC)
- * ----------------------------------------------------------------------------- */
-#network {
-    padding: 3px 9px;
-    color: @foreground;
-    border-radius: 9999px;
-    transition: all 0.25s ease;
-}
-
-#network:hover {
-    background: alpha(@foreground, 0.12);
-    color: @color1;
-}
-
-#network.disconnected {
-    color: @color9;
-}
-
-#pulseaudio {
-    padding: 3px 9px;
-    color: @foreground;
-    border-radius: 9999px;
-    transition: all 0.25s ease;
-}
-
-#pulseaudio:hover {
-    background: alpha(@foreground, 0.12);
-    color: @color1;
-}
-
-#pulseaudio.muted {
-    color: alpha(@foreground, 0.45);
-}
-
-#battery {
-    padding: 3px 10px;
-    color: @foreground;
-    border-radius: 9999px;
-    font-weight: 600;
-    transition: all 0.25s ease;
-}
-
-#battery:hover {
-    background: alpha(@foreground, 0.12);
-    color: @color1;
-}
-
-#battery.charging, #battery.plugged {
-    color: @color2;
+#battery.plugged {
+    color: #8be9fd;
 }
 
 #battery.warning:not(.charging) {
-    color: #ffb74d;
+    color: #ffbe61;
 }
 
 #battery.critical:not(.charging) {
-    color: @color9;
-    animation: blinker 1s linear infinite;
+    color: #f53c3c;
+    animation-name: blink;
+    animation-duration: 0.5s;
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+    animation-direction: alternate;
+}
+#group-expand{
+    padding: 0px 5px;
+    transition: all .3s ease; 
+}
+#custom-expand{
+    padding: 0px 5px;
+    color:alpha(@foreground,.2);
+    text-shadow: 0px 0px 2px rgba(0, 0, 0, .7);
+    transition: all .3s ease; 
+}
+#custom-expand:hover{
+    color:rgba(255,255,255,.2);
+    text-shadow: 0px 0px 2px rgba(255, 255, 255, .5);
+}
+#custom-colorpicker{
+    padding: 0px 5px;
+}
+#cpu,#memory,#temperature{
+    padding: 0px 5px;
+    transition: all .3s ease; 
+    color:@color7;
+
+}
+#custom-endpoint{
+    color:transparent;
+    text-shadow: 0px 0px 1.5px rgba(0, 0, 0, 1);
+
+}
+#tray{
+    padding: 0px 5px;
+    transition: all .3s ease; 
+
+}
+#tray menu * {
+    padding: 0px 5px;
+    transition: all .3s ease; 
 }
 
-#custom-notification {
-    padding: 3px 9px;
-    margin-left: 2px;
-    color: @color1;
-    border-radius: 9999px;
-    font-size: 14.5px;
-    transition: all 0.25s ease;
-}
-
-#custom-notification:hover {
-    background: alpha(@color1, 0.20);
-}
-
-#tray {
-    padding: 0px 6px;
-    margin-left: 4px;
-}
-
-#tray > .passive {
-    -gtk-icon-effect: dim;
-}
-
-#tray > .needs-attention {
-    -gtk-icon-effect: highlight;
-    background-color: @color9;
-}
-
-@keyframes blinker {
-    50% {
-        opacity: 0.4;
-    }
+#tray menu separator {
+    padding: 0px 5px;
+    transition: all .3s ease; 
 }
